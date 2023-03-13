@@ -16,8 +16,6 @@ except AssertionError:
     print("Dados inválidos, finalizando programa")
     exit()
 
-dados = [nome, horas, turno, categoria]
-
 valor_da_hora_trabalhada = PORCENTAGENS[categoria][turno]
 
 salario = (valor_da_hora_trabalhada * SALARIO_MINIMO) * horas

@@ -6,9 +6,9 @@ with open("notas.txt", "r") as notas:
     for a in range(total_de_alunos):
         aluno = a * 5
         nome =  valores[aluno]
-        n1 = int(valores[aluno+1])
-        n2 = int(valores[aluno+2])
-        n3 = int(valores[aluno+3])
+        n1 = float(valores[aluno+1])
+        n2 = float(valores[aluno+2])
+        n3 = float(valores[aluno+3])
 
         media = (n1+n2+n3) / 3
 

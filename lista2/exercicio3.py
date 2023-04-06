@@ -5,7 +5,7 @@ with open("exame.txt") as exame:
 
     for a in range(total_de_alunos):
         aluno = a * 3
-        nota_exame = int(input("Digite a nova nota de exame do aluno " + valores[aluno] + ": "))
+        nota_exame = float(input("Digite a nova nota de exame do aluno " + valores[aluno] + ": "))
 
         media_final = (nota_exame + float(valores[aluno+1][:-2])) / 2
 

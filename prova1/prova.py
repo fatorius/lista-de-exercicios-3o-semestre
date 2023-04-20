@@ -61,7 +61,7 @@ def menu_de_opcoes():
     print(colored("5 - Informar despesa", "yellow"))
     print(colored("6 - Alterar despesa", "yellow"))
     print(colored("7 - Remover despesa", "yellow"))
-    print(colored("8 - Listar despesa", "yellow"))
+    print(colored("8 - Listar despesas", "yellow"))
     print(colored("9 - Mostar resultado", "yellow"))
     print(colored("0 - Sair", "yellow"))
 
@@ -82,11 +82,18 @@ def menu_de_opcoes():
 
 
 tabela = None
+poupanca = None
 
 
 def informar_salario():
     tamanho = tabela.shape[0]
-    saldo_anterior = tabela.at[tamanho-1, "Saldo"]
+
+    tipo_anterior = tabela.at[tamanho-1, "Tipo"]
+
+    if (tipo_anterior == "Salario"):
+        print(colored("ATENÇÃO: Você precisa informar as despesas do mês antes de informar o próximo salário", "white", "on_red"))
+        return 
+
     mes_anterior = tabela.at[tamanho-1, "Mes"]
     ano_anterior = tabela.at[tamanho-1, "Ano"]
 
@@ -107,8 +114,7 @@ def informar_salario():
         print(colored("Salário digitado inválido, tente novamente: ", "red"))
         informar_salario()
 
-    tabela.loc[tamanho] = {"Mes": mes_atual,"Ano": ano_atual,"Valor": salario_atual,"Tipo": "Salario",
-                            "Saldo": saldo_anterior + salario_atual}
+    tabela.loc[tamanho] = {"Mes": mes_atual,"Ano": ano_atual,"Valor": salario_atual,"Tipo": "Salario"}
     
     print(colored(f"Salário adicionado com sucesso", "white", "on_blue"))
 
@@ -124,20 +130,33 @@ def listar_salario():
     pass
 
 
+def aplicar_na_poupanca(valor, mes, ano):
+    print(colored(f"O valor de {valor} será aplicado no fundo de renda fixa", "white", "on_green"))
+
+    tamanho = poupanca.shape[0]
+
+    saldo_anterior = poupanca.at[tamanho-1, "Saldo"]
+
+    rendimento = saldo_anterior  / 100
+
+    poupanca.loc[tamanho] = {"Mes": mes,"Ano": ano,"Valor": valor,"Tipo": "Aplicação", "Saldo": saldo_anterior + valor}
+    poupanca.loc[tamanho] = {"Mes": mes,"Ano": ano,"Valor": rendimento,"Tipo": "Rendimento", "Saldo": saldo_anterior + valor + rendimento}
+
+
 def informar_despesa():
     tamanho = tabela.shape[0]
-    saldo_anterior = tabela.at[tamanho-1, "Saldo"]
+
+    tipo_anterior = tabela.at[tamanho-1, "Tipo"]
+
+    if (tipo_anterior != "Salario"):
+        print(colored("ATENÇÃO: Você precisa informar o salário do mês antes de informar as despesas", "white", "on_red"))
+        return 
+
     mes_anterior = tabela.at[tamanho-1, "Mes"]
     ano_anterior = tabela.at[tamanho-1, "Ano"]
+    salario_anterior = tabela.at[tamanho-1, "Valor"]
 
-    mes_atual = mes_anterior + 1
-    ano_atual = ano_anterior
-
-    if mes_atual == 13:
-        mes_atual = 1
-        ano_atual += 1
-
-    print(colored(f"Informe as suas despesas para o mês {mes_atual} de {ano_atual}", "white", "on_red"))
+    print(colored(f"Informe as suas despesas para o mês {mes_anterior} de {ano_anterior}", "white", "on_red"))
 
     despesa_atual = 0
 
@@ -147,10 +166,11 @@ def informar_despesa():
         print(colored("Despesa digitada inválida, tente novamente: ", "red"))
         informar_salario()
 
-    tabela.loc[tamanho] = {"Mes": mes_atual,"Ano": ano_atual,"Valor": despesa_atual,"Tipo": "Despesa",
-                            "Saldo": saldo_anterior - despesa_atual}
+    tabela.loc[tamanho] = {"Mes": mes_anterior,"Ano": ano_anterior,"Valor": despesa_atual,"Tipo": "Despesa"}
     
     print(colored(f"Despesas registradas com sucesso", "white", "on_red"))
+
+    aplicar_na_poupanca(salario_anterior-despesa_atual, mes_anterior, ano_anterior)
 
 def alterar_despesa():
     pass
@@ -165,22 +185,43 @@ def listar_despesas():
 
 
 def mostrar_resultados():
+    print()
+    print(colored("Receitas/Despesas Mes a Mes:", "black", "on_white"))
     print(tabela)
+    
+    print()
+    print(colored("Investimentos Mes a Mes:", "black", "on_white"))
+    print(poupanca)
+
+    print()
     print(colored("Aperte enter para continuar", "white", "on_cyan"))
     input()
 
 
 def carregar_tabela():
+    global poupanca
     global tabela
+    
     try:
         tabela = pd.read_csv("tabela.csv")
     except FileNotFoundError:
         with open("tabela.csv", 'w') as nova_tabela:
-            nova_tabela.write("id,Mes,Ano,Valor,Tipo,Saldo\n")
-            nova_tabela.write('0,0,2023,0,Inicio,0')
+            nova_tabela.write("id,Mes,Ano,Valor,Tipo\n")
+            nova_tabela.write('0,0,2023,0,Inicio')
             nova_tabela.close()
 
         tabela = pd.read_csv("tabela.csv", index_col="id")
+
+    try:
+        poupanca = pd.read_csv("poupanca.csv")
+    except FileNotFoundError:
+        with open("poupanca.csv", "w") as tabela_de_poupanca:
+            tabela_de_poupanca.write("id,Mes,Ano,Valor,Tipo,Saldo\n")
+            tabela_de_poupanca.write("0,0,2023,0,Inicio,0")
+            tabela_de_poupanca.close()
+        
+        poupanca = pd.read_csv("poupanca.csv", index_col="id")
+    
 
 def encerrar_programa():
     print(colored("Encerrando programa...", "white", "on_red"))
@@ -197,5 +238,6 @@ def iniciar_programa():
          listar_despesas, mostrar_resultados][menu_de_opcoes()]()
     
         tabela.to_csv("tabela.csv", index_label=False)
+        poupanca.to_csv("poupanca.csv", index_label=False)
 
 iniciar_programa()

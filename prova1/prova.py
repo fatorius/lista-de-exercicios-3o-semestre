@@ -3,7 +3,6 @@ import sys
 from os import execl
 from subprocess import check_call
 
-
 def instalar_pacote(pacote):
     try:
         pip.main(["install", pacote])
@@ -73,7 +72,6 @@ def menu_de_opcoes():
         print(colored("Erro: Opção informada inválida", "red"))
         return menu_de_opcoes()
 
-
     if 0 <= opcao_selecionada < 10:
         return opcao_selecionada
     else:
@@ -118,16 +116,100 @@ def informar_salario():
     
     print(colored(f"Salário adicionado com sucesso", "white", "on_blue"))
 
+
 def excluir_salario():
-    pass
+    print(colored(f"ATENÇÃO -> Essa ação irá excluir todos os lançamentos subsequentes para evitar inconsistencias", "white", "on_red"))
 
+    mes = 0
+    ano = 0
 
+    print(colored(f"Digite o mês a ser excluido", "white", "on_blue"))
+
+    try:
+        mes = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    print(colored(f"Digite o ano a ser excluido", "white", "on_blue"))
+    
+    try:
+        ano = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    tamanho = tabela.shape[0]
+
+    fim = 0
+
+    for linha in range(tamanho):
+        if tabela.at[linha, "Mes"] == mes and tabela.at[linha, "Ano"]:
+            fim = linha
+            break
+
+    tabela = tabela.iloc[:fim]
+
+    
 def alterar_salario():
-    pass
+    mes = 0
+    ano = 0
+
+    print(colored(f"Digite o mês a ser alterado", "white", "on_blue"))
+
+    try:
+        mes = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    print(colored(f"Digite o ano a ser alterado", "white", "on_blue"))
+    
+    try:
+        ano = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    print(colored(f"Digite o valor", "white", "on_blue"))
+    
+    valor = 0
+
+    try:
+        valor = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    tamanho = tabela.shape[0]
+
+    fim = 0
+
+    for linha in range(tamanho):
+        if tabela.at[linha, "Mes"] == mes and tabela.at[linha, "Ano"]:
+            fim = linha
+            break
+
+    tabela.at[fim, "Valor"] = valor
 
 
 def listar_salario():
-    pass
+    print(colored(f"Os seus salários foram: ", "white", "on_blue"))
+
+    tamanho = tabela.shape[0]
+
+    for linha in range(tamanho):
+        if tabela.at[linha, "Tipo"] == "Salario":
+            mes = tabela.iloc[linha]["Mes"]
+            ano = tabela.iloc[linha]["Ano"]
+            valor = tabela.iloc[linha]["Valor"]
+
+            print(f"Mês {mes} de {ano}: R$ {valor}")
 
 
 def aplicar_na_poupanca(valor, mes, ano):
@@ -140,7 +222,7 @@ def aplicar_na_poupanca(valor, mes, ano):
     rendimento = saldo_anterior  / 100
 
     poupanca.loc[tamanho] = {"Mes": mes,"Ano": ano,"Valor": valor,"Tipo": "Aplicação", "Saldo": saldo_anterior + valor}
-    poupanca.loc[tamanho] = {"Mes": mes,"Ano": ano,"Valor": rendimento,"Tipo": "Rendimento", "Saldo": saldo_anterior + valor + rendimento}
+    poupanca.loc[tamanho+1] = {"Mes": mes,"Ano": ano,"Valor": rendimento,"Tipo": "Rendimento", "Saldo": saldo_anterior + valor + rendimento}
 
 
 def informar_despesa():
@@ -162,25 +244,117 @@ def informar_despesa():
 
     try:
         despesa_atual = int(input(colored("joao-serasa: ~$ ", "light_green")))
+        if salario_anterior < despesa_atual:
+            print(colored("As despesas não podem ser maiores que as receitas, tente novamente: ", "red"))
+            informar_despesa()
+
+            return
     except:
         print(colored("Despesa digitada inválida, tente novamente: ", "red"))
-        informar_salario()
+        informar_despesa()
 
+        return
+        
     tabela.loc[tamanho] = {"Mes": mes_anterior,"Ano": ano_anterior,"Valor": despesa_atual,"Tipo": "Despesa"}
     
     print(colored(f"Despesas registradas com sucesso", "white", "on_red"))
 
     aplicar_na_poupanca(salario_anterior-despesa_atual, mes_anterior, ano_anterior)
 
+
 def alterar_despesa():
-    pass
+    mes = 0
+    ano = 0
+
+    print(colored(f"Digite o mês a ser alterado", "white", "on_blue"))
+
+    try:
+        mes = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    print(colored(f"Digite o ano a ser alterado", "white", "on_blue"))
+    
+    try:
+        ano = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    print(colored(f"Digite o valor", "white", "on_blue"))
+    
+    valor = 0
+
+    try:
+        valor = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    tamanho = tabela.shape[0]
+
+    fim = 0
+
+    for linha in range(tamanho):
+        if tabela.at[linha, "Mes"] == mes and tabela.at[linha, "Ano"]:
+            fim = linha
+            break
+
+    tabela.at[fim+1, "Valor"] = valor
 
 
 def remover_despesa():
-    pass
+    print(colored(f"ATENÇÃO -> Essa ação irá excluir todos os lançamentos subsequentes para evitar inconsistencias", "white", "on_red"))
+
+    mes = 0
+    ano = 0
+
+    print(colored(f"Digite o mês a ser excluido", "white", "on_blue"))
+
+    try:
+        mes = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    print(colored(f"Digite o ano a ser excluido", "white", "on_blue"))
+    
+    try:
+        ano = int(input(colored("joao-serasa: ~$ ", "light_green")))
+    except:
+        print(colored("Valores de entrada inválidos, tente novamente: ", "red"))
+        excluir_salario()
+        return
+    
+    tamanho = tabela.shape[0]
+
+    fim = 0
+
+    for linha in range(tamanho):
+        if tabela.at[linha, "Mes"] == mes and tabela.at[linha, "Ano"]:
+            fim = linha
+            break
+
+    tabela = tabela.iloc[:fim]
 
 
 def listar_despesas():
+    print(colored(f"As suas despesas foram: ", "white", "on_red"))
+
+    tamanho = tabela.shape[0]
+
+    for linha in range(tamanho):
+        if tabela.at[linha, "Tipo"] == "Despesa":
+            mes = tabela.iloc[linha]["Mes"]
+            ano = tabela.iloc[linha]["Ano"]
+            valor = tabela.iloc[linha]["Valor"]
+
+            print(f"Mês {mes} de {ano}: R$ {valor}")
     pass
 
 
